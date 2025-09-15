@@ -62,5 +62,3 @@ inline StickDirection Controller::decodeStickDirection(int x, int y) const {
   if (right) return RIGHT;
   return CENTER;
 }
-
-

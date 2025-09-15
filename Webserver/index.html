@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>TetrisESP Serial Viewer</title>
+	<link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+	<div class="container">
+		<h1>TetrisESP Serial Viewer</h1>
+		<div class="controls">
+			<button id="connectBtn">Connect Serial</button>
+			<label>
+				Baud:
+				<select id="baud">
+					<option value="115200" selected>115200</option>
+					<option value="9600">9600</option>
+				</select>
+			</label>
+			<label>
+				Scale:
+				<input id="scale" type="number" min="10" max="40" value="20" />
+			</label>
+			<span class="status" id="status">Disconnected</span>
+		</div>
+		<div class="row">
+			<canvas id="canvas" width="200" height="440"></canvas>
+			<!-- <pre id="raw"></pre> -->
+		</div>
+		<noscript>Enable JavaScript to use Web Serial.</noscript>
+	</div>
+	<script src="./app.js"></script>
+</body>
+</html>
+

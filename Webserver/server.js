@@ -1,12 +1,51 @@
 const WebSocket = require('ws');
 const http = require('http');
 const url = require('url');
+const fs = require('fs');
+const path = require('path');
 
 // Store rooms by code
 const rooms = {};
 
-// Create HTTP server (for upgrade requests)
-const server = http.createServer();
+// Create HTTP server (serve static + upgrade requests)
+const server = http.createServer((req, res) => {
+    // Serve static files from this directory
+    if (req.method !== 'GET') {
+        res.writeHead(405);
+        res.end('Method Not Allowed');
+        return;
+    }
+
+    let requestedPath = url.parse(req.url).pathname || '/';
+    if (requestedPath === '/') requestedPath = '/index.html';
+
+    const filePath = path.join(__dirname, requestedPath);
+
+    // Prevent path traversal
+    if (!filePath.startsWith(__dirname)) {
+        res.writeHead(403);
+        res.end('Forbidden');
+        return;
+    }
+
+    fs.readFile(filePath, (err, data) => {
+        if (err) {
+            res.writeHead(404);
+            res.end('Not Found');
+            return;
+        }
+        const ext = path.extname(filePath).toLowerCase();
+        const mime = {
+            '.html': 'text/html; charset=utf-8',
+            '.js': 'application/javascript; charset=utf-8',
+            '.css': 'text/css; charset=utf-8',
+            '.json': 'application/json; charset=utf-8'
+        }[ext] || 'application/octet-stream';
+
+        res.writeHead(200, { 'Content-Type': mime, 'Cross-Origin-Opener-Policy': 'same-origin', 'Cross-Origin-Embedder-Policy': 'require-corp' });
+        res.end(data);
+    });
+});
 
 const wss = new WebSocket.Server({ noServer: true });
 
@@ -59,5 +98,5 @@ server.on('upgrade', function upgrade(request, socket, head) {
 
 const PORT = 8080;
 server.listen(PORT, () => {
-    console.log(`WebSocket server listening on port ${PORT}`);
+    console.log(`Server listening on http://localhost:${PORT}`);
 });
