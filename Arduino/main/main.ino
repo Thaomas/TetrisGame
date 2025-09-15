@@ -244,8 +244,10 @@ void gameTick() {
     moveDown();
     gameTickTime = 0;
   } else {
-  gameTickTime++;
-  } 
+    if(direction != DOWN) {
+      gameTickTime++;
+    }
+  }
   checkLines();
 }
 
@@ -255,7 +257,7 @@ void checkLines() {
       if (grid[i][j] == 0) {
         break;
       }
-      if (j == 10) {
+      if (j == 9) {
         removeLine(i);
       }
     }
