@@ -25,8 +25,8 @@ bool Game::checkCollision(int shape, int rotation, int x, int y) {
 }
 
 void Game::init() {
-  for (int i = 0; i < 22; i++) {
-    for (int j = 0; j < 10; j++) {
+  for (int i = 0; i < GRID_HEIGHT; i++) {
+    for (int j = 0; j < GRID_WIDTH; j++) {
       grid[i][j] = 0;
     }
   }
@@ -105,19 +105,19 @@ void Game::rotateRight() {
 }
 
 void Game::checkLines() {
-  for (int i = 0; i < 22; i++) {
+  for (int i = 0; i < GRID_HEIGHT; i++) {
     bool full = true;
-    for (int j = 0; j < 10; j++) {
+    for (int j = 0; j < GRID_WIDTH; j++) {
       if (grid[i][j] == 0) {
         full = false;
         break;
       }
     }
+    
     if (full) {
       for (int r = i; r >= 0; r--) {
-        for (int c = 0; c < 10; c++) {
-          if (r == 0) grid[r][c] = 0;
-          else grid[r][c] = grid[r - 1][c];
+        for (int c = 0; c < GRID_WIDTH; c++) {
+          grid[r][c] = (r == 0) ? 0 : grid[r - 1][c];
         }
       }
     }
@@ -125,9 +125,9 @@ void Game::checkLines() {
 }
 
 void Game::printGrid() {
-  byte tempGrid[22][10];
-  for (int i = 0; i < 22; i++) {
-    for (int j = 0; j < 10; j++) {
+  byte tempGrid[GRID_HEIGHT][GRID_WIDTH];
+  for (int i = 0; i < GRID_HEIGHT; i++) {
+    for (int j = 0; j < GRID_WIDTH; j++) {
       tempGrid[i][j] = grid[i][j];
     }
   }
@@ -137,21 +137,21 @@ void Game::printGrid() {
       if (!tetrominoes[currentTetromino][currentRotation][i][j]) continue;
       int gridX = currentX + j;
       int gridY = currentY + i;
-      if (gridX < 0 || gridX >= 10 || gridY < 0 || gridY >= 22) continue;
+      if (gridX < 0 || gridX >= GRID_WIDTH || gridY < 0 || gridY >= GRID_HEIGHT) continue;
       tempGrid[gridY][gridX] = currentTetromino + 1;
     }
   }
 
   Serial.print('+');
-  for (int j = 0; j < 10; j++) Serial.print('-');
+  for (int j = 0; j < GRID_WIDTH; j++) Serial.print('-');
   Serial.println('+');
-  for (int i = 0; i < 22; i++) {
+  for (int i = 0; i < GRID_HEIGHT; i++) {
     Serial.print('|');
-    for (int j = 0; j < 10; j++) Serial.print(tempGrid[i][j]);
+    for (int j = 0; j < GRID_WIDTH; j++) Serial.print(tempGrid[i][j]);
     Serial.println('|');
   }
   Serial.print('+');
-  for (int j = 0; j < 10; j++) Serial.print('-');
+  for (int j = 0; j < GRID_WIDTH; j++) Serial.print('-');
   Serial.println('+');
   Serial.println();
 }

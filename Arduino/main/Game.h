@@ -1,6 +1,9 @@
 #ifndef GAME_H
 #define GAME_H
 
+#define GRID_WIDTH 10
+#define GRID_HEIGHT 22
+
 #include <Arduino.h>
 #include "Control.h"
 
@@ -28,12 +31,13 @@ private:
   bool checkCollision(int shape, int rotation, int x, int y);
   bool tryApplyRotation(int targetRotation);
 
-  byte grid[22][10] = {};
+  byte grid[GRID_HEIGHT][GRID_WIDTH] = {};
   int currentTetromino = 0;
   int currentRotation = 0;
   int currentX = 3;
   int currentY = 0;
   int gameTickTime = 0;
+  int score = 0;
 };
 
 #endif // GAME_H
