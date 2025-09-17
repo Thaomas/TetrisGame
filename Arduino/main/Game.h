@@ -17,6 +17,9 @@ public:
 
   void Tick(Controller controller);
 
+  // Copy current grid (including active piece) into outGrid
+  void getGrid(byte outGrid[GRID_HEIGHT][GRID_WIDTH]) const;
+
 private:
   // Movement controls (internal)
   void moveDown();

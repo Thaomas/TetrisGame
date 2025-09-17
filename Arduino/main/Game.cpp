@@ -156,6 +156,25 @@ void Game::printGrid() {
   Serial.println();
 }
 
+void Game::getGrid(byte outGrid[GRID_HEIGHT][GRID_WIDTH]) const {
+  for (int i = 0; i < GRID_HEIGHT; i++) {
+    for (int j = 0; j < GRID_WIDTH; j++) {
+      outGrid[i][j] = grid[i][j];
+    }
+  }
+
+  // Overlay active piece
+  for (int i = 0; i < 4; i++) {
+    for (int j = 0; j < 4; j++) {
+      if (!tetrominoes[currentTetromino][currentRotation][i][j]) continue;
+      int gridX = currentX + j;
+      int gridY = currentY + i;
+      if (gridX < 0 || gridX >= GRID_WIDTH || gridY < 0 || gridY >= GRID_HEIGHT) continue;
+      outGrid[gridY][gridX] = currentTetromino + 1;
+    }
+  }
+}
+
 
 void Game::Tick(Controller controller) {
 // Check for left press

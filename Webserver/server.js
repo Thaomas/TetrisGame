@@ -66,11 +66,34 @@ wss.on('connection', function connection(ws, request, roomCode) {
     }
     rooms[roomCode].push(ws);
 
-    ws.on('message', function incoming(message) {
+    ws.on('message', function incoming(data, isBinary) {
+        // Decode and display 22x10 grid if binary payload length matches 220 bytes
+        if (isBinary && data && data.byteLength === 220) {
+            try {
+                const bytes = new Uint8Array(data);
+                let out = '+----------+'; // 10 dashes between borders
+                for (let r = 0; r < 22; r++) {
+                    out += '\n|';
+                    for (let c = 0; c < 10; c++) {
+                        out += String(bytes[r * 10 + c]);
+                    }
+                    out += '|';
+                }
+                out += '\n+----------+';
+                console.log(`[Room ${roomCode}] Grid (${bytes.length} bytes):\n${out}`);
+            } catch (e) {
+                console.error('Failed to decode grid:', e);
+            }
+        } else if (!isBinary && typeof data === 'string') {
+            console.log(`[Room ${roomCode}] Text: ${data}`);
+        } else {
+            console.log(`[Room ${roomCode}] Message (${isBinary ? 'binary' : 'text'}) len=${data?.byteLength ?? data?.length ?? 0}`);
+        }
+
         // Broadcast to all clients in the same room except sender
         rooms[roomCode].forEach(client => {
             if (client !== ws && client.readyState === WebSocket.OPEN) {
-                client.send(message);
+                client.send(data, { binary: !!isBinary });
             }
         });
     });
