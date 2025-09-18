@@ -53,20 +53,27 @@ const wss = new WebSocket.Server({ noServer: true });
 // ws://localhost:8080/?code=ROOMCODE
 // Replace ROOMCODE with your desired room identifier.
 wss.on('connection', function connection(ws, request, roomCode) {
-
-
     if (!roomCode) {
         // Generate a random 5-digit numeric room code
         roomCode = Math.floor(10000 + Math.random() * 90000).toString();
         ws.send(JSON.stringify({ type: 'roomCode', code: roomCode }));
     }
-    
+        
     if (!rooms[roomCode]) {
         rooms[roomCode] = [];
     }
     rooms[roomCode].push(ws);
-
+    
     ws.on('message', function incoming(data, isBinary) {
+        // Print the time (in ISO format) and the number of bytes received since the last message from this client.
+        if (!ws._lastMessageTime) {
+            ws._lastMessageTime = Date.now();
+        }
+        const now = Date.now();
+        const since = now - ws._lastMessageTime;
+        console.log(`[${new Date().toISOString()}] message received from client in room ${roomCode} (${since} ms since last message)`);
+        ws._lastMessageTime = now;
+
         // Decode and display 22x10 grid if binary payload length matches 220 bytes
         if (isBinary && data && data.byteLength === 220) {
             try {
