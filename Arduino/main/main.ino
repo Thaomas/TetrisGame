@@ -8,8 +8,8 @@ const int LEFT_BUTTON_PIN = 23;   // Left button
 const int RIGHT_BUTTON_PIN = 21;  // Right button
 const int STICK_BUTTON_PIN = 25;  // Stick click down
 
-const int STICK_X_PIN = 26;  // L/R = x
-const int STICK_Y_PIN = 27;  // U/D = y
+const int STICK_X_PIN = 33;  // L/R = x
+const int STICK_Y_PIN = 32;  // U/D = y
 
 // Wi-Fi credentials (set these!)
 const char* WIFI_SSID = "MSI 6387";
@@ -80,8 +80,8 @@ void setup() {
   webSocket.setReconnectInterval(5000);    // auto-reconnect every 5s
   webSocket.enableHeartbeat(15000, 3000, 2); // ping every 15s
 
-  // controller.begin();
-  // game.init();
+  controller.begin();
+  game.init();
 }
 
 void loop() {
@@ -96,6 +96,7 @@ void loop() {
   if (now - lastGameUpdate >= 250) {
     Serial.println("Game update");
     controller.update();
+    
     game.Tick(controller);
     game.printGrid();
 

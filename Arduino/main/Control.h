@@ -18,6 +18,8 @@ public:
   int getStickY() const { return stickY; }
   StickDirection getDirection() const { return direction; }
 
+  int stickCenterX;
+  int stickCenterY;
 private:
   StickDirection decodeStickDirection(int x, int y) const;
 
@@ -30,8 +32,6 @@ private:
   const float stickMaxValue;
   const float percentThreshold;
 
-  int stickCenterX;
-  int stickCenterY;
 
   bool leftPressed;
   bool rightPressed;

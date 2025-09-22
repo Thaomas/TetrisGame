@@ -22,7 +22,7 @@ void Controller::begin() {
   pinMode(rightButtonPin, INPUT_PULLUP);
   pinMode(stickButtonPin, INPUT_PULLUP);
 
-  delay(100);
+  delay(1000);
   stickCenterX = analogRead(stickXPin);
   stickCenterY = analogRead(stickYPin);
 }
