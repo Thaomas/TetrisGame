@@ -25,15 +25,22 @@ bool Game::checkCollision(int shape, int rotation, int x, int y) {
 }
 
 void Game::init() {
+  this->reset();
+  this->gameOver = false;
+}
+
+void Game::reset() {
   for (int i = 0; i < GRID_HEIGHT; i++) {
     for (int j = 0; j < GRID_WIDTH; j++) {
       grid[i][j] = 0;
     }
   }
+  
   currentTetromino = random(0, 7);
   currentRotation = 0;
   currentX = 3;
   currentY = 0;
+  gameOver = false;
 }
 
 void Game::moveDown() {
@@ -56,6 +63,10 @@ void Game::moveDown() {
   currentY = 0;
   currentTetromino = random(0, 7);
   currentRotation = 0;
+
+  if(checkCollision(currentTetromino, currentRotation, currentX, currentY)) {
+    this->gameOver = true;
+  }
 }
 
 void Game::moveLeft() {
@@ -105,6 +116,7 @@ void Game::rotateRight() {
 }
 
 void Game::checkLines() {
+  int linesCleared = 0;
   for (int i = 0; i < GRID_HEIGHT; i++) {
     bool full = true;
     for (int j = 0; j < GRID_WIDTH; j++) {
@@ -120,27 +132,19 @@ void Game::checkLines() {
           grid[r][c] = (r == 0) ? 0 : grid[r - 1][c];
         }
       }
+      linesCleared++;
     }
   }
+  this->updateScore(this->score + linesCleared);
 }
 
 void Game::printGrid() {
-  byte tempGrid[GRID_HEIGHT][GRID_WIDTH];
-  for (int i = 0; i < GRID_HEIGHT; i++) {
-    for (int j = 0; j < GRID_WIDTH; j++) {
-      tempGrid[i][j] = grid[i][j];
-    }
-  }
 
-  for (int i = 0; i < 4; i++) {
-    for (int j = 0; j < 4; j++) {
-      if (!tetrominoes[currentTetromino][currentRotation][i][j]) continue;
-      int gridX = currentX + j;
-      int gridY = currentY + i;
-      if (gridX < 0 || gridX >= GRID_WIDTH || gridY < 0 || gridY >= GRID_HEIGHT) continue;
-      tempGrid[gridY][gridX] = currentTetromino + 1;
-    }
-  }
+  Serial.print("Score: ");
+  Serial.println(this->score);  
+
+  byte tempGrid[GRID_HEIGHT][GRID_WIDTH];
+  this->getGrid(tempGrid);
 
   Serial.print('+');
   for (int j = 0; j < GRID_WIDTH; j++) Serial.print('-');
@@ -177,6 +181,14 @@ void Game::getGrid(byte outGrid[GRID_HEIGHT][GRID_WIDTH]) const {
 
 
 void Game::Tick(Controller controller) {
+
+  if (this->gameOver) {
+    if (controller.isStickPressed() || controller.isLeftPressed() || controller.isRightPressed()) {
+      this->reset();
+    }
+    return;
+  }
+
 // Check for left press
 if (controller.isLeftPressed()) {
   Serial.println("Rotate left");
@@ -227,3 +239,18 @@ if (this->gameTickTime >= 4) {
 this->checkLines();
 }
 
+void Game::updateScore(int newScore) {
+  this->score = newScore;
+  this->scoreChanged = true;
+}
+
+void Game::swapBuffer() {
+  if(this->buffer == -1) {
+    this->buffer = random(0, 7);
+  }
+  this->buffer ^= this->currentTetromino;
+  this->currentTetromino ^= this->buffer;
+  this->buffer ^= this->currentTetromino;
+  
+  this->bufferChanged = true;
+}

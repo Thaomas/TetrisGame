@@ -47,6 +47,15 @@ const server = http.createServer((req, res) => {
     });
 });
 
+const PacketType = {
+    GAME_STATE_UPDATE: 0,
+    GAME_SCORE_UPDATE: 1,
+    GAME_BUFFER_UPDATE: 2,
+    GAME_END: 3,
+    GAME_START: 4
+};
+
+
 const wss = new WebSocket.Server({ noServer: true });
 
 // Example WebSocket connection string for clients:
@@ -73,28 +82,41 @@ wss.on('connection', function connection(ws, request, roomCode) {
         const since = now - ws._lastMessageTime;
         console.log(`[${new Date().toISOString()}] message received from client in room ${roomCode} (${since} ms since last message)`);
         ws._lastMessageTime = now;
+        if (!isBinary) {
+            return;
+        }
 
-        // Decode and display 22x10 grid if binary payload length matches 220 bytes
-        if (isBinary && data && data.byteLength === 220) {
-            try {
-                const bytes = new Uint8Array(data);
-                let out = '+----------+'; // 10 dashes between borders
-                for (let r = 0; r < 22; r++) {
-                    out += '\n|';
-                    for (let c = 0; c < 10; c++) {
-                        out += String(bytes[r * 10 + c]);
+
+        const packetType = data[0];
+        const packetData = data.slice(1);
+        
+        switch (packetType) {
+            case PacketType.GAME_STATE_UPDATE:
+                try {
+                    let out = '+----------+'; // 10 dashes between borders
+                    for (let r = 0; r < 22; r++) {
+                        out += '\n|';
+                        for (let c = 0; c < 10; c++) {
+                            out += String(packetData[r * 10 + c]);
+                        }
+                        out += '|';
                     }
-                    out += '|';
+                    out += '\n+----------+';
+                    console.log(`[Room ${roomCode}] Grid (${packetData.length} bytes):\n${out}`);
+                } catch (e) {
+                    console.error('Failed to decode grid:', e);
                 }
-                out += '\n+----------+';
-                console.log(`[Room ${roomCode}] Grid (${bytes.length} bytes):\n${out}`);
-            } catch (e) {
-                console.error('Failed to decode grid:', e);
-            }
-        } else if (!isBinary && typeof data === 'string') {
-            console.log(`[Room ${roomCode}] Text: ${data}`);
-        } else {
-            console.log(`[Room ${roomCode}] Message (${isBinary ? 'binary' : 'text'}) len=${data?.byteLength ?? data?.length ?? 0}`);
+                break;
+            case PacketType.GAME_SCORE_UPDATE:
+                console.log(`[Room ${roomCode}] Score update: ${packetData}`);
+                break;
+
+            case PacketType.GAME_BUFFER_UPDATE:
+                break;
+            case PacketType.GAME_END:
+                break;
+            case PacketType.GAME_START:
+                break;
         }
 
         // Broadcast to all clients in the same room except sender

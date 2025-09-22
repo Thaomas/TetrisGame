@@ -20,20 +20,30 @@ public:
   // Copy current grid (including active piece) into outGrid
   void getGrid(byte outGrid[GRID_HEIGHT][GRID_WIDTH]) const;
 
+  bool scoreChanged = false;
+  int getScore();
+
+  bool bufferChanged = false;
+  int getBuffer();
 private:
-  // Movement controls (internal)
+  // Piece movement and rotation
   void moveDown();
   void moveLeft();
   void moveRight();
   void rotateLeft();
   void rotateRight();
 
-  // Step housekeeping (line clears, etc.)
+  // Game state and logic
+  void updateScore(int newScore);
+  void swapBuffer();
+  void reset();
   void checkLines();
 
+  // Collision and rotation helpers
   bool checkCollision(int shape, int rotation, int x, int y);
   bool tryApplyRotation(int targetRotation);
 
+  // Game data
   byte grid[GRID_HEIGHT][GRID_WIDTH] = {};
   int currentTetromino = 0;
   int currentRotation = 0;
@@ -41,6 +51,8 @@ private:
   int currentY = 0;
   int gameTickTime = 0;
   int score = 0;
+  int buffer = -1;
+  bool gameOver = false;
 };
 
 #endif // GAME_H
