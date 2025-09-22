@@ -28,13 +28,44 @@ void Controller::begin() {
 }
 
 void Controller::update() {
-  leftPressed = digitalRead(leftButtonPin) == HIGH;
-  rightPressed = digitalRead(rightButtonPin) == HIGH;
-  stickPressed = digitalRead(stickButtonPin) == LOW;
+
+  if (!leftPressed)
+    leftPressed = digitalRead(leftButtonPin) == HIGH;
+  
+  if (!rightPressed)
+    rightPressed = digitalRead(rightButtonPin) == HIGH;
+
+  if (!stickPressed)
+    stickPressed = digitalRead(stickButtonPin) == LOW;
 
   stickX = analogRead(stickXPin);
   stickY = analogRead(stickYPin);
   direction = decodeStickDirection(stickX, stickY);
+}
+
+
+bool Controller::isLeftPressed() {
+  if (leftPressed) {
+    leftPressed = false;
+    return true;
+  }
+  return false;
+}
+
+bool Controller::isRightPressed() {
+  if (rightPressed) {
+    rightPressed = false;
+    return true;
+  }
+  return false;
+}
+
+bool Controller::isStickPressed() {
+  if (stickPressed) {
+    stickPressed = false;
+    return true;
+  }
+  return false;
 }
 
 inline StickDirection Controller::decodeStickDirection(int x, int y) const {

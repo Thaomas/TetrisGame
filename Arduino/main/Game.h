@@ -19,12 +19,19 @@ public:
 
   // Copy current grid (including active piece) into outGrid
   void getGrid(byte outGrid[GRID_HEIGHT][GRID_WIDTH]) const;
+  void getCompressedGrid(byte outGrid[GRID_HEIGHT][GRID_WIDTH/2]) const ;
 
-  bool scoreChanged = false;
-  int getScore();
+  bool scoreChanged = true;
+  int getScore(){
+    scoreChanged = false; 
+    return score;
+  };
 
-  bool bufferChanged = false;
-  int getBuffer();
+  bool bufferChanged = true;
+  int getBuffer() {
+    bufferChanged = false; 
+    return buffer;
+  };
 private:
   // Piece movement and rotation
   void moveDown();
@@ -38,7 +45,7 @@ private:
   void swapBuffer();
   void reset();
   void checkLines();
-
+  
   // Collision and rotation helpers
   bool checkCollision(int shape, int rotation, int x, int y);
   bool tryApplyRotation(int targetRotation);

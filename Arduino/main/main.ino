@@ -1,6 +1,7 @@
-#include "Control.h"  
+#include "Control.h"
 #include "Game.h"
 #include "ServerConnector.h"
+#include "types.h"
 
 // Pin assignments: adjust as needed
 const int LEFT_BUTTON_PIN = 23;   // Left button
@@ -18,12 +19,14 @@ const char* WIFI_PASSWORD = "53y17C0!";
 // Example: ws://192.168.1.100:8080/?code=12345
 const char* WS_HOST = "192.168.137.1";  // replace with your PC/server LAN IP
 const uint16_t WS_PORT = 8080;
-const char* ROOM_CODE = "12345";        // set your room code
-const char* wsPath = String("/?code=") + ROOM_CODE;
+const char* ROOM_CODE = "12345";  // set your room code
+const char* wsPath = "/?code=12345";
+
+static void webSocketEvent(WStype_t type, uint8_t* payload, size_t length);
 
 ServerConnector serverConnector(
-  WIFI_SSID, WIFI_PASSWORD, 
-  WS_HOST, WS_PORT, wsPath.c_str(), 
+  WIFI_SSID, WIFI_PASSWORD,
+  WS_HOST, WS_PORT, wsPath,
   webSocketEvent);
 
 Controller controller(
@@ -74,7 +77,7 @@ void setup() {
 
 void loop() {
   static unsigned long lastGameUpdate = 0;
-  static byte out[GRID_HEIGHT][GRID_WIDTH];
+  static byte out[GRID_HEIGHT][GRID_WIDTH/2];
 
   // Keep WebSocket alive
   serverConnector.loop();
@@ -82,21 +85,28 @@ void loop() {
 
   // Only update game every 250ms
   unsigned long now = millis();
-  if (now - lastGameUpdate >= 100) {
+  if (now - lastGameUpdate >= 250) {
 
     game.Tick(controller);
     game.printGrid();
 
     // Get current grid and send it
-    game.getGrid(out);
-    serverConnector.sendPacket(PacketType.GAME_STATE_UPDATE, (uint8_t*)out);
-    
+    game.getCompressedGrid(out);
+
+    const size_t gridBytes = GRID_HEIGHT * GRID_WIDTH;
+    serverConnector.sendPacket(GAME_STATE_UPDATE, (const uint8_t*)out, gridBytes);
+
+
     if (game.scoreChanged) {
-      serverConnector.sendPacket(PacketType.GAME_SCORE_UPDATE, (uint8_t*)game.getScore());
+      int score = game.getScore();
+      uint8_t value = (uint8_t)constrain(score, 0, 255);
+      serverConnector.sendPacket(GAME_SCORE_UPDATE, &value, 1);
     }
 
     if (game.bufferChanged) {
-      serverConnector.sendPacket(PacketType.GAME_BUFFER_UPDATE, (uint8_t*)game.getBuffer());
+      int buffer = game.getBuffer();
+      uint8_t value = (uint8_t)constrain(buffer, 0, 255);
+      serverConnector.sendPacket(GAME_BUFFER_UPDATE, &value, 1);
     }
     lastGameUpdate = now;
   }

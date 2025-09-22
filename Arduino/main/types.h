@@ -1,26 +1,6 @@
-enum StickDirection {
-    CENTER,
-    UP,
-    DOWN,
-    LEFT,
-    RIGHT,
-    UP_LEFT,
-    UP_RIGHT,
-    DOWN_LEFT,
-    DOWN_RIGHT
-  };
-static const char* StickDirectionStr[] = {
-    "CENTER",
-    "UP",
-    "DOWN",
-    "LEFT",
-    "RIGHT",
-    "UP_LEFT",
-    "UP_RIGHT",
-    "DOWN_LEFT",
-    "DOWN_RIGHT"
-};
-enum PacketType {
+#ifndef ENUMS_H
+#define ENUMS_H
+typedef enum PacketType {
     GAME_STATE_UPDATE,
     GAME_SCORE_UPDATE,
     GAME_BUFFER_UPDATE,
@@ -34,3 +14,29 @@ static const char* PacketTypeStr[] = {
     "GAME_END",
     "GAME_START"
 };
+
+typedef enum StickDirection {
+    CENTER,
+    UP,
+    DOWN,
+    LEFT,
+    RIGHT,
+    UP_LEFT,
+    UP_RIGHT,
+    DOWN_LEFT,
+    DOWN_RIGHT
+  };
+  static const char* StickDirectionStr[] = {
+    "CENTER",
+    "UP",
+    "DOWN",
+    "LEFT",
+    "RIGHT",
+    "UP_LEFT",
+    "UP_RIGHT",
+    "DOWN_LEFT",
+    "DOWN_RIGHT"
+  };
+  
+
+#endif

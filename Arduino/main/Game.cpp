@@ -140,9 +140,43 @@ void Game::checkLines() {
 
 void Game::printGrid() {
 
-  Serial.print("Score: ");
-  Serial.println(this->score);  
+  // Header block with score and buffered tetromino preview
+  Serial.print('+');
+  for (int j = 0; j < GRID_WIDTH; j++) Serial.print('-');
+  Serial.println('+');
 
+  // Line with score and buffer label
+  Serial.print('|');
+  String header = String("Score: ") + String(this->score) + String("  Buf:");
+  for (int j = 0; j < GRID_WIDTH; j++) {
+    if (j < header.length()) {
+      Serial.print(header[j]);
+    } else {
+      Serial.print(' ');
+    }
+  }
+  Serial.println('|');
+
+  // 4x4 preview for buffered tetromino at rotation 0
+  for (int i = 0; i < 4; i++) {
+    Serial.print('|');
+    for (int j = 0; j < GRID_WIDTH; j++) {
+      char ch = ' ';
+      if (j < 4) {
+        if (this->buffer != -1 && tetrominoes[this->buffer][0][i][j]) {
+          ch = '#';
+        }
+      }
+      Serial.print(ch);
+    }
+    Serial.println('|');
+  }
+
+  Serial.print('+');
+  for (int j = 0; j < GRID_WIDTH; j++) Serial.print('-');
+  Serial.println('+');
+
+  // Actual grid below the header block
   byte tempGrid[GRID_HEIGHT][GRID_WIDTH];
   this->getGrid(tempGrid);
 
@@ -179,6 +213,16 @@ void Game::getGrid(byte outGrid[GRID_HEIGHT][GRID_WIDTH]) const {
   }
 }
 
+void Game::getCompressedGrid(byte outGrid[GRID_HEIGHT][GRID_WIDTH/2]) const {
+  byte tmpGrid[GRID_HEIGHT][GRID_WIDTH];
+  this->getGrid(tmpGrid);
+  for (int i = 0; i < GRID_HEIGHT; i++) {
+    for (int j = 0; j < GRID_WIDTH; j+=2) {
+      outGrid[i][j/2] = tmpGrid[i][j+1] << 4 | tmpGrid[i][j];
+    }
+  }
+}
+
 
 void Game::Tick(Controller controller) {
 
@@ -204,6 +248,7 @@ if (controller.isRightPressed()) {
 // Check for stick press
 if (controller.isStickPressed()) {
   Serial.println("Stick pressed");
+  this->swapBuffer();
 }
 
 // Get direction

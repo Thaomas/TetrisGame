@@ -1,6 +1,5 @@
 #include "ServerConnector.h"
 #include <WiFi.h>
-#include "types.h"
 
 ServerConnector::ServerConnector(const char* wifiSSID, const char* wifiPassword, const char* host, uint16_t port, const char* path, void (*callback)(WStype_t type, uint8_t* payload, size_t length))
     : wifiSSID(wifiSSID), wifiPassword(wifiPassword), host(host), port(port), path(path), callback(callback) {}
@@ -28,10 +27,23 @@ void ServerConnector::sendData(const uint8_t* data, size_t length) {
     webSocket.sendBIN(data, length);
 }
 
-void ServerConnector::sendPacket(PacketType type, const uint8_t* data) {
-    size_t length = sizeof(data);
-    uint8_t packet[length + 1];
+void ServerConnector::sendPacket(PacketType type, const uint8_t* data, size_t length) {
+    uint8_t* packet = (uint8_t*)malloc(length + 1);
+    if (!packet) {
+        return;
+    }
     packet[0] = (uint8_t)type;
-    memcpy(packet + 1, data, length);
+    if (data && length > 0) {
+        memcpy(packet + 1, data, length);
+    }
     webSocket.sendBIN(packet, length + 1);
+    free(packet);
+}
+
+void ServerConnector::loop(){
+    webSocket.loop();
+}
+
+void ServerConnector::disconnect(){
+    webSocket.disconnect();
 }

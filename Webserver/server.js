@@ -72,12 +72,16 @@ wss.on('connection', function connection(ws, request, roomCode) {
         rooms[roomCode] = [];
     }
     rooms[roomCode].push(ws);
+    // Initialize per-connection state
+    ws._grid = Array.from({ length: 22 }, () => Array(10).fill(0));
+    ws._score = 0;
+    ws._buffer = 0;
     
     ws.on('message', function incoming(data, isBinary) {
         // Print the time (in ISO format) and the number of bytes received since the last message from this client.
         if (!ws._lastMessageTime) {
             ws._lastMessageTime = Date.now();
-        }
+        }   
         const now = Date.now();
         const since = now - ws._lastMessageTime;
         console.log(`[${new Date().toISOString()}] message received from client in room ${roomCode} (${since} ms since last message)`);
@@ -89,15 +93,20 @@ wss.on('connection', function connection(ws, request, roomCode) {
 
         const packetType = data[0];
         const packetData = data.slice(1);
-        
+        console.log(packetData); 
         switch (packetType) {
             case PacketType.GAME_STATE_UPDATE:
                 try {
                     let out = '+----------+'; // 10 dashes between borders
                     for (let r = 0; r < 22; r++) {
                         out += '\n|';
-                        for (let c = 0; c < 10; c++) {
-                            out += String(packetData[r * 10 + c]);
+                        for (let c = 0; c < 5; c++) {
+                            let byte = packetData[r*5+c];
+                            ws._grid[r][c] = byte & 0x0F;
+                            out += ws._grid[r][c];
+                            ws._grid[r][c+1] = (byte >> 4) & 0x0F;
+                            out += ws._grid[r][c+1];
+                            
                         }
                         out += '|';
                     }
@@ -107,15 +116,23 @@ wss.on('connection', function connection(ws, request, roomCode) {
                     console.error('Failed to decode grid:', e);
                 }
                 break;
+
             case PacketType.GAME_SCORE_UPDATE:
                 console.log(`[Room ${roomCode}] Score update: ${packetData}`);
+                ws._score = packetData[1];
                 break;
 
             case PacketType.GAME_BUFFER_UPDATE:
+                console.log(`[Room ${roomCode}] Buffer update: ${packetData}`);
+                ws._buffer = packetData[1];
                 break;
+
             case PacketType.GAME_END:
                 break;
+
             case PacketType.GAME_START:
+                // Clear the ws._grid to all zeros (10x22)
+                ws._grid = Array.from({ length: 22 }, () => Array(10).fill(0));
                 break;
         }
 

@@ -98,6 +98,7 @@
 		};
 
 		socket.onmessage = (event) => {
+			console.log(event.data)
 			if (typeof event.data === 'string') {
 				asciiBuffer += event.data;
 				let frame;
