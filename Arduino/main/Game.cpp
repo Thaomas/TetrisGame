@@ -135,7 +135,9 @@ void Game::checkLines() {
       linesCleared++;
     }
   }
-  this->updateScore(this->score + linesCleared);
+  if(linesCleared){
+    this->updateScore(this->score + linesCleared);
+  }
 }
 
 void Game::printGrid() {

@@ -13,6 +13,9 @@ Controller::Controller(int leftButtonPin, int rightButtonPin, int stickButtonPin
     leftPressed(false),
     rightPressed(false),
     stickPressed(false),
+    lastLeftPressMs(0),
+    lastRightPressMs(0),
+    lastStickPressMs(0),
     stickX(0),
     stickY(0),
     direction(CENTER) {}
@@ -29,14 +32,30 @@ void Controller::begin() {
 
 void Controller::update() {
   
-  if (!leftPressed)
-    leftPressed = digitalRead(leftButtonPin) == HIGH;
-  
-  if (!rightPressed)
-    rightPressed = digitalRead(rightButtonPin) == HIGH;
+  // Read raw button states (active LOW for stick, active HIGH for left/right per original code)
+  bool rawLeft = (digitalRead(leftButtonPin) == HIGH);
+  bool rawRight = (digitalRead(rightButtonPin) == HIGH);
+  bool rawStick = (digitalRead(stickButtonPin) == LOW);
 
-  if (!stickPressed)
-    stickPressed = digitalRead(stickButtonPin) == LOW;
+  unsigned long now = millis();
+
+  // Left button cooldown
+  if (rawLeft && (now - lastLeftPressMs >= debounceMs)) {
+    leftPressed = true;
+    lastLeftPressMs = now;
+  }
+  
+  // Right button cooldown
+  if (rawRight && (now - lastRightPressMs >= debounceMs)) {
+    rightPressed = true;
+    lastRightPressMs = now;
+  }
+
+  // Stick button cooldown
+  if (rawStick && (now - lastStickPressMs >= debounceMs)) {
+    stickPressed = true;
+    lastStickPressMs = now;
+  }
 
   stickX = analogRead(stickXPin);
   stickY = analogRead(stickYPin);

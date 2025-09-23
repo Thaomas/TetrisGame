@@ -36,6 +36,10 @@ private:
   bool leftPressed;
   bool rightPressed;
   bool stickPressed;
+  unsigned long lastLeftPressMs;
+  unsigned long lastRightPressMs;
+  unsigned long lastStickPressMs;
+  const unsigned long debounceMs = 500; // cooldown per button press
   int stickX;
   int stickY;
   StickDirection direction;
