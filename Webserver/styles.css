@@ -91,6 +91,15 @@ canvas {
     font-weight: 600;
 }
 
+
+
+.buffer-preview {
+    background: #0a0e14;
+    border: 1px solid #1e2a3a;
+    border-radius: 8px;
+    image-rendering: pixelated;
+}
+
 pre {
     background: #0e1621;
     padding: 8px;

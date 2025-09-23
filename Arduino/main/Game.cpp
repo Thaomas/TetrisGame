@@ -292,15 +292,25 @@ void Game::updateScore(int newScore) {
 }
 
 void Game::swapBuffer() {
-  if(this->currentX > 2)
+  // Only allow swapping near the top to avoid invalid placements
+  if (this->currentY > 2)
     return;
 
-  if(this->buffer == -1) {
+  if (this->buffer == -1) {
     this->buffer = random(0, 7);
   }
-  this->buffer ^= this->currentTetromino;
-  this->currentTetromino ^= this->buffer;
-  this->buffer ^= this->currentTetromino;
-  
+  // Swap current tetromino with buffer
+  int oldTetromino = this->currentTetromino;
+  this->currentTetromino = this->buffer;
+  this->buffer = oldTetromino;
+
+  // If the swap causes a collision, revert it
+  if (checkCollision(this->currentTetromino, this->currentRotation, this->currentX, this->currentY)) {
+    int tmp = this->currentTetromino;
+    this->currentTetromino = this->buffer;
+    this->buffer = tmp;
+    return;
+  }
+
   this->bufferChanged = true;
 }

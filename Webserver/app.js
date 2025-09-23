@@ -8,6 +8,8 @@
 	const canvas = document.getElementById('canvas');
 	const scoreEl = document.getElementById('scoreValue');
 	const bufferEl = document.getElementById('bufferValue');
+	const bufferPreview = document.getElementById('bufferPreview');
+	const tetrominoGridEl = null;
 	const ctx = canvas.getContext('2d');
 
 	const GRID_ROWS = 22;
@@ -15,6 +17,77 @@
 
 	let socket = null;
 	let asciiBuffer = '';
+	// Copy of Arduino/main/shapes.h tetrominoes definitions (7 pieces, 4 rotations, 4x4 each)
+	const tetrominoes = [
+		// I
+		[
+			[0,0,1,0],[0,0,1,0],[0,0,1,0],[0,0,1,0]
+		],
+		// O
+		[
+			[0,0,0,0],[0,1,1,0],[0,1,1,0],[0,0,0,0]
+		],
+		// T
+		[
+			[0,0,0,0],[1,1,1,0],[0,1,0,0],[0,0,0,0]
+		],
+		// S
+		[
+			[0,0,0,0],[0,1,1,0],[1,1,0,0],[0,0,0,0]
+		],
+		// Z
+		[
+			[0,0,0,0],[1,1,0,0],[0,1,1,0],[0,0,0,0]
+		],
+		// J
+		[
+			[0,0,0,0],[1,1,1,0],[0,0,1,0],[0,0,0,0]
+		],
+		// L
+		[
+			[0,0,0,0],[1,1,1,0],[1,0,0,0],[0,0,0,0]
+		],
+	];
+
+	function colorForPiece(index) {
+		switch (index) {
+			case 0: return '#35c4ff'; // I - cyan
+			case 1: return '#f1c40f'; // O - yellow
+			case 2: return '#9b59b6'; // T - purple
+			case 3: return '#2ecc71'; // S - green
+			case 4: return '#e74c3c'; // Z - red
+			case 5: return '#3498db'; // J - blue
+			case 6: return '#e67e22'; // L - orange
+			default: return '#e6eef8';
+		}
+	}
+
+	function renderTetrominoesGallery() {}
+
+	function renderBufferedPreview(bufferIndex) {
+		if (!bufferPreview) return;
+		const ctxPrev = bufferPreview.getContext('2d');
+		const cellSize = Math.floor(Math.min(bufferPreview.width, bufferPreview.height) / 4);
+		ctxPrev.clearRect(0, 0, bufferPreview.width, bufferPreview.height);
+		ctxPrev.fillStyle = '#0a0e14';
+		ctxPrev.fillRect(0, 0, bufferPreview.width, bufferPreview.height);
+		if (bufferIndex < 0 || bufferIndex >= tetrominoes.length) return;
+		const rotation0 = tetrominoes[bufferIndex];
+		const color = colorForPiece(bufferIndex);
+		// Center the 4x4 in the preview canvas
+		const offsetX = Math.floor((bufferPreview.width - cellSize * 4) / 2);
+		const offsetY = Math.floor((bufferPreview.height - cellSize * 4) / 2);
+		for (let r = 0; r < 4; r++) {
+			for (let c = 0; c < 4; c++) {
+				if (rotation0[r][c]) {
+					ctxPrev.fillStyle = color;
+					ctxPrev.fillRect(offsetX + c * cellSize, offsetY + r * cellSize, cellSize, cellSize);
+					ctxPrev.strokeStyle = '#1e2a3a';
+					ctxPrev.strokeRect(offsetX + c * cellSize + 0.5, offsetY + r * cellSize + 0.5, cellSize - 1, cellSize - 1);
+				}
+			}
+		}
+	}
 
 
 	const PacketType = {
@@ -121,6 +194,7 @@
 		socket.onopen = () => {
 			setStatus('Connected to room ' + room);
 			ensureCanvasSize();
+			renderTetrominoesGallery();
 		};
 
 		socket.onmessage = (event) => {
@@ -156,6 +230,7 @@
 					if (packetData.length > 0) {
 						const buffer = packetData[0];
 						bufferEl.textContent = String(buffer);
+						renderBufferedPreview(buffer);
 						console.log(bufferEl.textContent);
 					}
 					break;

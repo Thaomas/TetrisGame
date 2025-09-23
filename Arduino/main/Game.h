@@ -11,11 +11,13 @@ class Game {
 public:
   // Lifecycle
   void init();
+  bool gameOver = false;
 
   // Debug/diagnostic printing to Serial
   void printGrid();
 
   void Tick(Controller& controller);
+  bool reset(Controller& controller);
 
   // Copy current grid (including active piece) into outGrid
   void getGrid(byte outGrid[GRID_HEIGHT][GRID_WIDTH]) const;
@@ -32,6 +34,7 @@ public:
     bufferChanged = false; 
     return buffer;
   };
+
 private:
   // Piece movement and rotation
   void moveDown();
@@ -43,7 +46,6 @@ private:
   // Game state and logic
   void updateScore(int newScore);
   void swapBuffer();
-  void reset();
   void checkLines();
   
   // Collision and rotation helpers
@@ -59,7 +61,6 @@ private:
   int gameTickTime = 0;
   int score = 0;
   int buffer = -1;
-  bool gameOver = false;
 };
 
 #endif // GAME_H

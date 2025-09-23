@@ -93,7 +93,8 @@ void loop() {
     // Get current grid and send it
     game.getCompressedGrid(out);
 
-    const size_t gridBytes = GRID_HEIGHT * GRID_WIDTH;
+    // Compressed grid packs two cells per byte → GRID_WIDTH/2 bytes per row
+    const size_t gridBytes = GRID_HEIGHT * (GRID_WIDTH / 2);
     serverConnector.sendPacket(GAME_STATE_UPDATE, (const uint8_t*)out, gridBytes);
 
 
@@ -109,6 +110,7 @@ void loop() {
       uint8_t value = (uint8_t)constrain(buffer, 0, 255);
       serverConnector.sendPacket(GAME_BUFFER_UPDATE, &value, 1);
     }
+
     lastGameUpdate = now;
   }
 }
