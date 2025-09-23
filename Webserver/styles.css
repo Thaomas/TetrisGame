@@ -65,6 +65,32 @@ canvas {
     image-rendering: pixelated;
 }
 
+/* Sidebar stats */
+.sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 160px;
+}
+
+.stat {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #0e1621;
+    border: 1px solid #1e2a3a;
+    border-radius: 8px;
+    padding: 8px 10px;
+}
+
+.stat .label {
+    opacity: 0.8;
+}
+
+.stat .value {
+    font-weight: 600;
+}
+
 pre {
     background: #0e1621;
     padding: 8px;

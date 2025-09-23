@@ -233,7 +233,6 @@ void Game::Tick(Controller& controller) {
     }
     return;
   }
-if(gameTickTime % 2 == 1){
 // Check for left press
 if (controller.isLeftPressed()) {
   Serial.println("Rotate left");
@@ -251,7 +250,7 @@ if (controller.isStickPressed()) {
   Serial.println("Stick pressed");
   this->swapBuffer();
 }
-}
+
 // Get direction
 StickDirection direction = controller.getDirection();
 if (direction != CENTER) {
@@ -293,7 +292,7 @@ void Game::updateScore(int newScore) {
 void Game::swapBuffer() {
   if(this->currentX > 2)
     return;
-  
+
   if(this->buffer == -1) {
     this->buffer = random(0, 7);
   }

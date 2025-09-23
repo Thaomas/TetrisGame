@@ -123,11 +123,13 @@ wss.on('connection', function connection(ws, request, roomCode) {
             case PacketType.GAME_SCORE_UPDATE:
                 ws._score = packetData[0];
                 console.log(`[Room ${roomCode}] Score update: ${ws._score}`);
+                notifyOthers(packetType, ws._score);
                 break;
 
             case PacketType.GAME_BUFFER_UPDATE:
                 ws._buffer = packetData[0];
                 console.log(`[Room ${roomCode}] Buffer update: ${ws._buffer}`);
+                notifyOthers(packetType, ws._buffer);
                 break;
 
             case PacketType.GAME_END:
@@ -155,6 +157,7 @@ wss.on('connection', function connection(ws, request, roomCode) {
                 outData = packetData.slice();
             } else {
                 outData = [];
+                outData.push(packetData);
             }
             outData.unshift(packetType);
             // Send as Buffer for binary

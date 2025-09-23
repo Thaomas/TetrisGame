@@ -6,6 +6,8 @@
 	const roomEl = document.getElementById('room');
 	const scaleEl = document.getElementById('scale');
 	const canvas = document.getElementById('canvas');
+	const scoreEl = document.getElementById('scoreValue');
+	const bufferEl = document.getElementById('bufferValue');
 	const ctx = canvas.getContext('2d');
 
 	const GRID_ROWS = 22;
@@ -103,7 +105,7 @@
 			out += '|';
 		}
 		out += '\n+----------+';
-		return out;
+		console.log(out);
 	}
 
 	function connectWebSocket() {
@@ -135,21 +137,28 @@
 					case PacketType.GAME_STATE_UPDATE:
 					try {
 						console.log(`Grid update for room ${room}: ${packetData.length} bytes`);
-						const ascii = asciiFrameFromBinary(packetData);
-						if (ascii) {
-							console.log(ascii);
-						}
+						// asciiFrameFromBinary(packetData);	
 						renderGridFromBinary(packetData);
 						} catch (e) {
 							console.error('Failed to decode grid:', e);
 						}
 						break;
-					case PacketType.GAME_SCORE_UPDATE:
-						console.log(`[Room ${room}] Score update:`, packetData);
-						break;
+				case PacketType.GAME_SCORE_UPDATE:
+					// Expect single byte score
+					if (packetData.length > 0) {
+						const score = packetData[0];
+						scoreEl.textContent = String(score);
+						console.log(scoreEl.textContent);
+					}
+					break;
 					case PacketType.GAME_BUFFER_UPDATE:
-						console.log(`[Room ${room}] Buffer update:`, packetData);
-						break;
+						console.log("Buffer update");
+					if (packetData.length > 0) {
+						const buffer = packetData[0];
+						bufferEl.textContent = String(buffer);
+						console.log(bufferEl.textContent);
+					}
+					break;
 					case PacketType.GAME_END:
 						break;
 					case PacketType.GAME_START:
