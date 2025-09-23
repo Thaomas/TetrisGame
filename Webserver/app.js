@@ -14,6 +14,16 @@
 	let socket = null;
 	let asciiBuffer = '';
 
+
+	const PacketType = {
+		GAME_STATE_UPDATE: 0,
+		GAME_SCORE_UPDATE: 1,
+		GAME_BUFFER_UPDATE: 2,
+		GAME_END: 3,
+		GAME_START: 4
+	};
+
+
 	function setStatus(text) {
 		statusEl.textContent = text;
 	}
@@ -78,8 +88,22 @@
 	}
 
 	function renderGridFromBinary(bytes) {
-		if (!(bytes instanceof Uint8Array) || bytes.length !== GRID_ROWS * GRID_COLS) return;
+		if (!(bytes instanceof Uint8Array) || bytes.length !== (GRID_ROWS * GRID_COLS)) return;
 		renderGridCells((row, col) => String(bytes[row * GRID_COLS + col]));
+	}
+
+	function asciiFrameFromBinary(bytes) {
+		if (!(bytes instanceof Uint8Array) || bytes.length !== (GRID_ROWS * GRID_COLS)) return '';
+		let out = '+----------+';
+		for (let r = 0; r < GRID_ROWS; r++) {
+			out += '\n|';
+			for (let c = 0; c < GRID_COLS; c++) {
+				out += String(bytes[r * GRID_COLS + c]);
+			}
+			out += '|';
+		}
+		out += '\n+----------+';
+		return out;
 	}
 
 	function connectWebSocket() {
@@ -98,15 +122,48 @@
 		};
 
 		socket.onmessage = (event) => {
-			console.log(event.data)
-			if (typeof event.data === 'string') {
-				asciiBuffer += event.data;
-				let frame;
-				while ((frame = tryExtractAsciiFrame())) {
-					renderGridFromAscii(frame);
+			// Expect binary data: first byte = packet type, rest = payload
+			const handleBytes = (bytes) => {
+				if (!(bytes instanceof Uint8Array) || bytes.length === 0) {
+					console.warn('Unexpected WS payload');
+					return;
 				}
-			} else if (event.data instanceof ArrayBuffer) {
-				renderGridFromBinary(new Uint8Array(event.data));
+				const packetType = bytes[0];
+				const packetData = bytes.slice(1);
+				
+				switch (packetType) {
+					case PacketType.GAME_STATE_UPDATE:
+					try {
+						console.log(`Grid update for room ${room}: ${packetData.length} bytes`);
+						const ascii = asciiFrameFromBinary(packetData);
+						if (ascii) {
+							console.log(ascii);
+						}
+						renderGridFromBinary(packetData);
+						} catch (e) {
+							console.error('Failed to decode grid:', e);
+						}
+						break;
+					case PacketType.GAME_SCORE_UPDATE:
+						console.log(`[Room ${room}] Score update:`, packetData);
+						break;
+					case PacketType.GAME_BUFFER_UPDATE:
+						console.log(`[Room ${room}] Buffer update:`, packetData);
+						break;
+					case PacketType.GAME_END:
+						break;
+					case PacketType.GAME_START:
+						// Reset handled server-side; nothing to do here yet
+						break;
+				}
+			};
+
+			if (event.data instanceof ArrayBuffer) {
+				handleBytes(new Uint8Array(event.data));
+			} else if (event.data instanceof Blob) {
+				event.data.arrayBuffer().then(buf => handleBytes(new Uint8Array(buf)));
+			} else {
+				console.warn('Unsupported WS message type');
 			}
 		};
 
@@ -124,7 +181,7 @@
 
 	function disconnectWebSocket() {
 		if (socket) {
-			try { socket.close(); } catch {}
+			try { socket.close(); } catch { }
 			socket = null;
 		}
 	}

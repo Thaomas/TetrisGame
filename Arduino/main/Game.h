@@ -15,7 +15,7 @@ public:
   // Debug/diagnostic printing to Serial
   void printGrid();
 
-  void Tick(Controller controller);
+  void Tick(Controller& controller);
 
   // Copy current grid (including active piece) into outGrid
   void getGrid(byte outGrid[GRID_HEIGHT][GRID_WIDTH]) const;

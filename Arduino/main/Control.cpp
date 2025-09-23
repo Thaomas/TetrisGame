@@ -28,7 +28,7 @@ void Controller::begin() {
 }
 
 void Controller::update() {
-
+  
   if (!leftPressed)
     leftPressed = digitalRead(leftButtonPin) == HIGH;
   

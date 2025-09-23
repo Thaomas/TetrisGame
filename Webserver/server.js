@@ -75,7 +75,7 @@ wss.on('connection', function connection(ws, request, roomCode) {
     // Initialize per-connection state
     ws._grid = Array.from({ length: 22 }, () => Array(10).fill(0));
     ws._score = 0;
-    ws._buffer = 0;
+    ws._buffer = -1;
     
     ws.on('message', function incoming(data, isBinary) {
         // Print the time (in ISO format) and the number of bytes received since the last message from this client.
@@ -93,7 +93,7 @@ wss.on('connection', function connection(ws, request, roomCode) {
 
         const packetType = data[0];
         const packetData = data.slice(1);
-        console.log(packetData); 
+        // console.log(packetData);    
         switch (packetType) {
             case PacketType.GAME_STATE_UPDATE:
                 try {
@@ -102,29 +102,32 @@ wss.on('connection', function connection(ws, request, roomCode) {
                         out += '\n|';
                         for (let c = 0; c < 5; c++) {
                             let byte = packetData[r*5+c];
-                            ws._grid[r][c] = byte & 0x0F;
-                            out += ws._grid[r][c];
-                            ws._grid[r][c+1] = (byte >> 4) & 0x0F;
-                            out += ws._grid[r][c+1];
+                            let fistNum = byte & 0x0F
+                            ws._grid[r][c*2] = fistNum;
+                            out += fistNum;
+                            let secondNum = (byte >> 4) & 0x0F;
+                            ws._grid[r][c*2+1] = secondNum;
+                            out += secondNum;
                             
                         }
                         out += '|';
                     }
                     out += '\n+----------+';
-                    console.log(`[Room ${roomCode}] Grid (${packetData.length} bytes):\n${out}`);
+                    // console.log(`[Room ${roomCode}] Grid (${packetData.length} bytes):\n${out}`);
+                    notifyOthers(packetType, ws._grid);
                 } catch (e) {
                     console.error('Failed to decode grid:', e);
                 }
                 break;
 
             case PacketType.GAME_SCORE_UPDATE:
-                console.log(`[Room ${roomCode}] Score update: ${packetData}`);
-                ws._score = packetData[1];
+                ws._score = packetData[0];
+                console.log(`[Room ${roomCode}] Score update: ${ws._score}`);
                 break;
 
             case PacketType.GAME_BUFFER_UPDATE:
-                console.log(`[Room ${roomCode}] Buffer update: ${packetData}`);
-                ws._buffer = packetData[1];
+                ws._buffer = packetData[0];
+                console.log(`[Room ${roomCode}] Buffer update: ${ws._buffer}`);
                 break;
 
             case PacketType.GAME_END:
@@ -137,13 +140,33 @@ wss.on('connection', function connection(ws, request, roomCode) {
         }
 
         // Broadcast to all clients in the same room except sender
-        rooms[roomCode].forEach(client => {
-            if (client !== ws && client.readyState === WebSocket.OPEN) {
-                client.send(data, { binary: !!isBinary });
+        function notifyOthers(packetType, packetData) {
+            // Ensure packetData is a flat Uint8Array or Buffer, not a 2D array
+            let outData;
+            if (Array.isArray(packetData) && Array.isArray(packetData[0])) {
+                // Flatten 2D array to 1D
+                outData = [];
+                for (let row of packetData) {
+                    outData.push(...row);
+                }
+            } else if (Buffer.isBuffer(packetData) || packetData instanceof Uint8Array) {
+                outData = Array.from(packetData);
+            } else if (Array.isArray(packetData)) {
+                outData = packetData.slice();
+            } else {
+                outData = [];
             }
-        });
+            outData.unshift(packetType);
+            // Send as Buffer for binary
+            const sendBuf = Buffer.from(outData);
+            rooms[roomCode].forEach(client => {
+                if (client !== ws && client.readyState === WebSocket.OPEN) {
+                    client.send(sendBuf, { binary: true });
+                }
+            });
+        }
     });
-
+    
     ws.on('close', function() {
         // Remove from room
         rooms[roomCode] = rooms[roomCode].filter(client => client !== ws);
