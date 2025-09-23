@@ -229,8 +229,13 @@
 						console.log("Buffer update");
 					if (packetData.length > 0) {
 						const buffer = packetData[0];
-						bufferEl.textContent = String(buffer);
-						renderBufferedPreview(buffer);
+						if (buffer === 255) {
+							bufferEl.textContent = '-';
+							renderBufferedPreview(-1);
+						} else {
+							bufferEl.textContent = String(buffer);
+							renderBufferedPreview(buffer);
+						}
 						console.log(bufferEl.textContent);
 					}
 					break;

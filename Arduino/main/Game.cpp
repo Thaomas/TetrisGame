@@ -40,6 +40,11 @@ void Game::reset() {
   currentRotation = 0;
   currentX = 3;
   currentY = 0;
+  
+  updateScore(0);
+
+  buffer = 255;
+  bufferChanged = true;
   gameOver = false;
 }
 
