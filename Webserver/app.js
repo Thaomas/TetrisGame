@@ -51,14 +51,14 @@
 
 	function colorForPiece(index) {
 		switch (index) {
-			case 0: return '#35c4ff'; // I - cyan
-			case 1: return '#f1c40f'; // O - yellow
-			case 2: return '#9b59b6'; // T - purple
-			case 3: return '#2ecc71'; // S - green
-			case 4: return '#e74c3c'; // Z - red
-			case 5: return '#3498db'; // J - blue
-			case 6: return '#e67e22'; // L - orange
-			default: return '#e6eef8';
+			case 0: return '#e74c3c'; // I - cyan
+			case 1: return '#3498db'; // O - yellow
+			case 2: return '#f1c40f'; // T - purple
+			case 3: return '#9b59b6'; // S - green
+			case 4: return '#e67e22'; // Z - red
+			case 5: return '#1abc9c'; // J - blue
+			case 6: return '#35c46a'; // L - orange
+			default: return '#0e1621';
 		}
 	}
 

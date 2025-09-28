@@ -97,8 +97,6 @@ void loop() {
     const size_t gridBytes = GRID_HEIGHT * (GRID_WIDTH / 2);
     serverConnector.sendPacket(GAME_STATE_UPDATE, (const uint8_t*)out, gridBytes);
 
-
-
     if (game.scoreChanged) {
       int score = game.getScore();
       uint8_t value = (uint8_t)constrain(score, 0, 255);

@@ -12,7 +12,7 @@ bool Game::checkCollision(int shape, int rotation, int x, int y) {
       int gridX = x + j;
       int gridY = y + i;
 
-      if (gridX < 0 || gridX >= 10 || gridY < 0 || gridY >= 22) {
+      if (gridX < 0 || gridX >= GRID_WIDTH || gridY < 0 || gridY >= GRID_HEIGHT) {
         return true;
       }
       if (grid[gridY][gridX]) {
